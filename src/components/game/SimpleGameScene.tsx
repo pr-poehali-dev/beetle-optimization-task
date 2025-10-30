@@ -17,7 +17,7 @@ interface Block {
 const SimpleGameScene = ({ onBackToMenu }: SimpleGameSceneProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [blocks, setBlocks] = useState<Block[]>([]);
-  const playerRef = useRef({ x: 0, y: 2, z: 0, yaw: 0, pitch: 0 });
+  const playerRef = useRef({ x: 0, y: 2.2, z: 0, yaw: 0, pitch: 0 });
   const keysRef = useRef({ w: false, a: false, s: false, d: false, space: false });
   const [isLocked, setIsLocked] = useState(false);
 
@@ -143,7 +143,7 @@ const SimpleGameScene = ({ onBackToMenu }: SimpleGameSceneProps) => {
       const sortedBlocks = blocks
         .map(block => {
           const dx = block.x - player.x;
-          const dy = block.y - player.y + 1;
+          const dy = block.y - player.y + 0.6;
           const dz = block.z - player.z;
           const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
           return { block, distance };
@@ -157,7 +157,7 @@ const SimpleGameScene = ({ onBackToMenu }: SimpleGameSceneProps) => {
         ) => {
           const screenCorners = corners.map(([x, y, z]) => {
             const dx = block.x + x - player.x;
-            const dy = block.y + y - player.y + 1;
+            const dy = block.y + y - player.y + 0.6;
             const dz = block.z + z - player.z;
 
             const cosYaw = Math.cos(player.yaw);
