@@ -26,18 +26,18 @@ const GameScene = ({ onBackToMenu }: GameSceneProps) => {
   const [showStats, setShowStats] = useState(false);
   const { toast } = useToast();
 
-  const addObject = (type: 'box' | 'sphere' | 'cylinder') => {
+  const addObject = () => {
     const colors = ['#8b5cf6', '#06b6d4', '#ec4899', '#f59e0b', '#10b981'];
     const newObject: GameObject = {
       id: Math.random().toString(36).substr(2, 9),
-      type,
+      type: 'box',
       position: [Math.random() * 10 - 5, 10, Math.random() * 10 - 5],
       color: colors[Math.floor(Math.random() * colors.length)]
     };
     setObjects(prev => [...prev, newObject]);
     toast({
-      title: "Объект создан",
-      description: `Добавлен ${type === 'box' ? 'куб' : type === 'sphere' ? 'сфера' : 'цилиндр'}`
+      title: "Куб создан",
+      description: "Добавлен новый куб в мир"
     });
   };
 
@@ -89,30 +89,14 @@ const GameScene = ({ onBackToMenu }: GameSceneProps) => {
         
         <div className="space-y-4">
           <div className="space-y-2">
-            <p className="text-sm text-muted-foreground">Создать объект:</p>
-            <div className="flex flex-col gap-2">
-              <Button
-                onClick={() => addObject('box')}
-                className="w-full"
-              >
-                <Icon name="Box" size={20} className="mr-2" />
-                Куб
-              </Button>
-              <Button
-                onClick={() => addObject('sphere')}
-                className="w-full"
-              >
-                <Icon name="Circle" size={20} className="mr-2" />
-                Сфера
-              </Button>
-              <Button
-                onClick={() => addObject('cylinder')}
-                className="w-full"
-              >
-                <Icon name="Cylinder" size={20} className="mr-2" />
-                Цилиндр
-              </Button>
-            </div>
+            <Button
+              onClick={addObject}
+              className="w-full"
+              size="lg"
+            >
+              <Icon name="Box" size={20} className="mr-2" />
+              Создать куб
+            </Button>
           </div>
 
           <div className="space-y-2">
