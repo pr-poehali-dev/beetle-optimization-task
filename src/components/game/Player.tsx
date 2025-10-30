@@ -5,7 +5,7 @@ import * as THREE from "three";
 
 const Player = () => {
   const playerRef = useRef<RapierRigidBody>(null);
-  const { camera } = useThree();
+  const { camera, gl } = useThree();
   const [keys, setKeys] = useState({
     w: false,
     a: false,
@@ -13,13 +13,33 @@ const Player = () => {
     d: false,
     space: false
   });
+  const [rotation, setRotation] = useState({ yaw: 0, pitch: 0 });
 
   useEffect(() => {
+    const canvas = gl.domElement;
+    
+    const handleClick = () => {
+      canvas.requestPointerLock();
+    };
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (document.pointerLockElement === canvas) {
+        const sensitivity = 0.002;
+        setRotation(prev => ({
+          yaw: prev.yaw - e.movementX * sensitivity,
+          pitch: Math.max(-Math.PI / 2, Math.min(Math.PI / 2, prev.pitch - e.movementY * sensitivity))
+        }));
+      }
+    };
+
     const handleKeyDown = (e: KeyboardEvent) => {
       const key = e.key.toLowerCase();
       if (key === 'w' || key === 'a' || key === 's' || key === 'd' || key === ' ') {
         e.preventDefault();
         setKeys(prev => ({ ...prev, [key === ' ' ? 'space' : key]: true }));
+      }
+      if (key === 'escape') {
+        document.exitPointerLock();
       }
     };
 
@@ -31,14 +51,18 @@ const Player = () => {
       }
     };
 
+    canvas.addEventListener('click', handleClick);
+    window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
 
     return () => {
+      canvas.removeEventListener('click', handleClick);
+      window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, []);
+  }, [gl]);
 
   useFrame(() => {
     if (!playerRef.current) return;
@@ -54,26 +78,22 @@ const Player = () => {
 
     const speed = 5;
     const direction = new THREE.Vector3();
-    const cameraDirection = new THREE.Vector3();
-    camera.getWorldDirection(cameraDirection);
-    cameraDirection.y = 0;
-    cameraDirection.normalize();
+    
+    const forward = new THREE.Vector3(
+      Math.sin(rotation.yaw),
+      0,
+      Math.cos(rotation.yaw)
+    );
+    const right = new THREE.Vector3(
+      Math.cos(rotation.yaw),
+      0,
+      -Math.sin(rotation.yaw)
+    );
 
-    const right = new THREE.Vector3();
-    right.crossVectors(cameraDirection, new THREE.Vector3(0, 1, 0)).normalize();
-
-    if (keys.w) {
-      direction.add(cameraDirection);
-    }
-    if (keys.s) {
-      direction.sub(cameraDirection);
-    }
-    if (keys.a) {
-      direction.sub(right);
-    }
-    if (keys.d) {
-      direction.add(right);
-    }
+    if (keys.w) direction.add(forward);
+    if (keys.s) direction.sub(forward);
+    if (keys.a) direction.sub(right);
+    if (keys.d) direction.add(right);
 
     if (direction.length() > 0) {
       direction.normalize();
@@ -98,12 +118,18 @@ const Player = () => {
       }, true);
     }
 
-    camera.position.set(
-      position.x,
-      position.y + 2,
-      position.z + 5
+    const cameraOffset = new THREE.Vector3(
+      -Math.sin(rotation.yaw) * 5 * Math.cos(rotation.pitch),
+      2 + Math.sin(rotation.pitch) * 5,
+      -Math.cos(rotation.yaw) * 5 * Math.cos(rotation.pitch)
     );
-    camera.lookAt(position.x, position.y, position.z);
+
+    camera.position.set(
+      position.x + cameraOffset.x,
+      position.y + cameraOffset.y,
+      position.z + cameraOffset.z
+    );
+    camera.lookAt(position.x, position.y + 1, position.z);
   });
 
   return (
