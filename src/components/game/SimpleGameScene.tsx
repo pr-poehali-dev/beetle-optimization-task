@@ -200,7 +200,7 @@ const SimpleGameScene = ({ onBackToMenu }: SimpleGameSceneProps) => {
       const sortedBlocks = blocks
         .map(block => {
           const dx = block.x - player.x;
-          const dy = block.y - player.y + 0.6;
+          const dy = block.y - player.y + 1.0;
           const dz = block.z - player.z;
           const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
           return { block, distance };
@@ -214,7 +214,7 @@ const SimpleGameScene = ({ onBackToMenu }: SimpleGameSceneProps) => {
         ) => {
           const screenCorners = corners.map(([x, y, z]) => {
             const dx = block.x + x - player.x;
-            const dy = block.y + y - player.y + 0.6;
+            const dy = block.y + y - player.y + 1.0;
             const dz = block.z + z - player.z;
 
             const cosYaw = Math.cos(player.yaw);
