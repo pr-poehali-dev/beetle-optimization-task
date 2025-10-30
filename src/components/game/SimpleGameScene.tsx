@@ -140,37 +140,73 @@ const SimpleGameScene = ({ onBackToMenu }: SimpleGameSceneProps) => {
       const halfHeight = canvas.height / 2;
       const scale = 500;
 
-      blocks.forEach(block => {
-        const dx = block.x - player.x;
-        const dy = block.y - player.y + 1;
-        const dz = block.z - player.z;
+      const sortedBlocks = blocks
+        .map(block => {
+          const dx = block.x - player.x;
+          const dy = block.y - player.y + 1;
+          const dz = block.z - player.z;
+          const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+          return { block, distance };
+        })
+        .sort((a, b) => b.distance - a.distance);
 
-        const cosYaw = Math.cos(player.yaw);
-        const sinYaw = Math.sin(player.yaw);
-        const rx = dx * cosYaw - dz * sinYaw;
-        const rz = dx * sinYaw + dz * cosYaw;
+      sortedBlocks.forEach(({ block }) => {
+        const drawCubeFace = (
+          corners: Array<[number, number, number]>,
+          faceColor: string
+        ) => {
+          const screenCorners = corners.map(([x, y, z]) => {
+            const dx = block.x + x - player.x;
+            const dy = block.y + y - player.y + 1;
+            const dz = block.z + z - player.z;
 
-        const cosPitch = Math.cos(player.pitch);
-        const sinPitch = Math.sin(player.pitch);
-        const ry = dy * cosPitch - rz * sinPitch;
-        const rzPitch = dy * sinPitch + rz * cosPitch;
+            const cosYaw = Math.cos(player.yaw);
+            const sinYaw = Math.sin(player.yaw);
+            const rx = dx * cosYaw - dz * sinYaw;
+            const rz = dx * sinYaw + dz * cosYaw;
 
-        if (rzPitch <= 0.1) return;
+            const cosPitch = Math.cos(player.pitch);
+            const sinPitch = Math.sin(player.pitch);
+            const ry = dy * cosPitch - rz * sinPitch;
+            const rzPitch = dy * sinPitch + rz * cosPitch;
 
-        const screenX = halfWidth + (rx / rzPitch) * scale;
-        const screenY = halfHeight - (ry / rzPitch) * scale;
-        const size = scale / rzPitch;
+            if (rzPitch <= 0.1) return null;
 
-        const brightness = Math.max(0.3, 1 - rzPitch / 30);
-        const color = block.color;
-        const r = parseInt(color.slice(1, 3), 16);
-        const g = parseInt(color.slice(3, 5), 16);
-        const b = parseInt(color.slice(5, 7), 16);
-        
-        ctx.fillStyle = `rgb(${r * brightness}, ${g * brightness}, ${b * brightness})`;
-        ctx.fillRect(screenX - size / 2, screenY - size / 2, size, size);
-        ctx.strokeStyle = `rgba(0,0,0,${brightness * 0.3})`;
-        ctx.strokeRect(screenX - size / 2, screenY - size / 2, size, size);
+            return {
+              x: halfWidth + (rx / rzPitch) * scale,
+              y: halfHeight - (ry / rzPitch) * scale,
+              z: rzPitch
+            };
+          });
+
+          if (screenCorners.some(c => c === null)) return;
+
+          const avgZ = screenCorners.reduce((sum, c) => sum + (c?.z || 0), 0) / screenCorners.length;
+          const brightness = Math.max(0.3, 1 - avgZ / 30);
+          const r = parseInt(faceColor.slice(1, 3), 16);
+          const g = parseInt(faceColor.slice(3, 5), 16);
+          const b = parseInt(faceColor.slice(5, 7), 16);
+
+          ctx.fillStyle = `rgb(${r * brightness}, ${g * brightness}, ${b * brightness})`;
+          ctx.beginPath();
+          ctx.moveTo(screenCorners[0]!.x, screenCorners[0]!.y);
+          for (let i = 1; i < screenCorners.length; i++) {
+            ctx.lineTo(screenCorners[i]!.x, screenCorners[i]!.y);
+          }
+          ctx.closePath();
+          ctx.fill();
+          ctx.strokeStyle = `rgba(0,0,0,${brightness * 0.5})`;
+          ctx.lineWidth = 1;
+          ctx.stroke();
+        };
+
+        const s = 0.5;
+        drawCubeFace([[-s,-s,s], [s,-s,s], [s,s,s], [-s,s,s]], block.color);
+        drawCubeFace([[-s,-s,-s], [-s,s,-s], [s,s,-s], [s,-s,-s]], '#1a9d4a');
+        drawCubeFace([[-s,s,-s], [-s,s,s], [s,s,s], [s,s,-s]], '#2dd56b');
+        drawCubeFace([[-s,-s,-s], [s,-s,-s], [s,-s,s], [-s,-s,s]], '#188a3e');
+        drawCubeFace([[-s,-s,-s], [-s,-s,s], [-s,s,s], [-s,s,-s]], '#1ea850');
+        drawCubeFace([[s,-s,-s], [s,s,-s], [s,s,s], [s,-s,s]], '#1ea850');
       });
 
       ctx.fillStyle = 'rgba(255,255,255,0.8)';
