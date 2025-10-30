@@ -17,11 +17,30 @@ interface Block {
 const SimpleGameScene = ({ onBackToMenu }: SimpleGameSceneProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [blocks, setBlocks] = useState<Block[]>([]);
-  const playerRef = useRef({ x: 0, y: 2.2, z: 0, yaw: 0, pitch: 0 });
+  const playerRef = useRef({ x: 0, y: 2.2, z: 0, yaw: 0, pitch: 0, velocityY: 0, onGround: false });
   const keysRef = useRef({ w: false, a: false, s: false, d: false, space: false });
   const [isLocked, setIsLocked] = useState(false);
+  const playerIdRef = useRef(`player_${Math.random().toString(36).substr(2, 9)}`);
+  const lastSaveTime = useRef(0);
 
   useEffect(() => {
+    const loadPosition = async () => {
+      try {
+        const response = await fetch('https://functions.poehali.dev/c1392dec-ff22-4068-ad04-acfb0ee2e39b', {
+          headers: { 'X-Player-Id': playerIdRef.current }
+        });
+        const position = await response.json();
+        playerRef.current.x = position.x;
+        playerRef.current.y = position.y;
+        playerRef.current.z = position.z;
+        playerRef.current.yaw = position.yaw;
+        playerRef.current.pitch = position.pitch;
+      } catch (error) {
+        console.error('Failed to load position:', error);
+      }
+    };
+    loadPosition();
+
     const groundBlocks: Block[] = [];
     for (let x = -25; x < 25; x++) {
       for (let z = -25; z < 25; z++) {
@@ -131,6 +150,44 @@ const SimpleGameScene = ({ onBackToMenu }: SimpleGameSceneProps) => {
       if (keys.d) {
         player.x += right.x * speed;
         player.z += right.z * speed;
+      }
+
+      const gravity = -20 * deltaTime;
+      player.velocityY += gravity;
+      player.y += player.velocityY * deltaTime;
+
+      const blockUnderPlayer = blocks.find(
+        b => Math.floor(player.x) === b.x && Math.floor(player.z) === b.z && b.y === 0
+      );
+
+      if (blockUnderPlayer && player.y <= 1.7) {
+        player.y = 1.7;
+        player.velocityY = 0;
+        player.onGround = true;
+      } else {
+        player.onGround = false;
+      }
+
+      if (keys.space && player.onGround) {
+        player.velocityY = 8;
+      }
+
+      if (currentTime - lastSaveTime.current > 2000) {
+        lastSaveTime.current = currentTime;
+        fetch('https://functions.poehali.dev/c1392dec-ff22-4068-ad04-acfb0ee2e39b', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Player-Id': playerIdRef.current
+          },
+          body: JSON.stringify({
+            x: player.x,
+            y: player.y,
+            z: player.z,
+            yaw: player.yaw,
+            pitch: player.pitch
+          })
+        }).catch(err => console.error('Failed to save position:', err));
       }
 
       ctx.fillStyle = '#87CEEB';

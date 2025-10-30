@@ -1,0 +1,39 @@
+{
+  "tests": [
+    {
+      "name": "Get default player position",
+      "method": "GET",
+      "path": "/",
+      "headers": {
+        "X-Player-Id": "test_player_123"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "x": 0,
+        "y": 2.2,
+        "z": 0
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Save player position",
+      "method": "POST",
+      "path": "/",
+      "headers": {
+        "X-Player-Id": "test_player_456"
+      },
+      "body": {
+        "x": 10.5,
+        "y": 3.2,
+        "z": -5.8,
+        "yaw": 1.57,
+        "pitch": 0.2
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "success": true
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}
