@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, Suspense, lazy } from "react";
 import MainMenu from "@/components/game/MainMenu";
-import GameScene from "@/components/game/GameScene";
+
+const GameScene = lazy(() => import("@/components/game/GameScene"));
 
 const Index = () => {
   const [gameStarted, setGameStarted] = useState(false);
@@ -17,7 +18,15 @@ const Index = () => {
     );
   }
 
-  return <GameScene onBackToMenu={() => setGameStarted(false)} />;
+  return (
+    <Suspense fallback={
+      <div className="w-full h-screen bg-background flex items-center justify-center">
+        <div className="text-2xl text-primary">Загрузка игры...</div>
+      </div>
+    }>
+      <GameScene onBackToMenu={() => setGameStarted(false)} />
+    </Suspense>
+  );
 };
 
 export default Index;
