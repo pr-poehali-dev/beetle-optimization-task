@@ -17,8 +17,8 @@ interface Block {
 const SimpleGameScene = ({ onBackToMenu }: SimpleGameSceneProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [blocks, setBlocks] = useState<Block[]>([]);
-  const [player, setPlayer] = useState({ x: 0, y: 2, z: 0, yaw: 0, pitch: 0 });
-  const [keys, setKeys] = useState({ w: false, a: false, s: false, d: false, space: false });
+  const playerRef = useRef({ x: 0, y: 2, z: 0, yaw: 0, pitch: 0 });
+  const keysRef = useRef({ w: false, a: false, s: false, d: false, space: false });
   const [isLocked, setIsLocked] = useState(false);
 
   useEffect(() => {
@@ -47,7 +47,8 @@ const SimpleGameScene = ({ onBackToMenu }: SimpleGameSceneProps) => {
       }
       if (['w', 'a', 's', 'd', ' '].includes(key)) {
         e.preventDefault();
-        setKeys(prev => ({ ...prev, [key === ' ' ? 'space' : key]: true }));
+        const k = key === ' ' ? 'space' : key;
+        keysRef.current[k as keyof typeof keysRef.current] = true;
       }
       if (key === 'escape') {
         document.exitPointerLock();
@@ -58,7 +59,8 @@ const SimpleGameScene = ({ onBackToMenu }: SimpleGameSceneProps) => {
       const key = e.key.toLowerCase();
       if (['w', 'a', 's', 'd', ' '].includes(key)) {
         e.preventDefault();
-        setKeys(prev => ({ ...prev, [key === ' ' ? 'space' : key]: false }));
+        const k = key === ' ' ? 'space' : key;
+        keysRef.current[k as keyof typeof keysRef.current] = false;
       }
     };
 
@@ -69,11 +71,8 @@ const SimpleGameScene = ({ onBackToMenu }: SimpleGameSceneProps) => {
     const handleMouseMove = (e: MouseEvent) => {
       if (document.pointerLockElement === canvasRef.current) {
         const sensitivity = 0.002;
-        setPlayer(prev => ({
-          ...prev,
-          yaw: prev.yaw - e.movementX * sensitivity,
-          pitch: Math.max(-Math.PI / 2, Math.min(Math.PI / 2, prev.pitch - e.movementY * sensitivity))
-        }));
+        playerRef.current.yaw -= e.movementX * sensitivity;
+        playerRef.current.pitch = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, playerRef.current.pitch - e.movementY * sensitivity));
       }
     };
 
@@ -105,6 +104,9 @@ const SimpleGameScene = ({ onBackToMenu }: SimpleGameSceneProps) => {
       lastTime = currentTime;
 
       const speed = 5 * deltaTime;
+      const player = playerRef.current;
+      const keys = keysRef.current;
+      
       const forward = {
         x: Math.sin(player.yaw),
         z: Math.cos(player.yaw)
@@ -114,32 +116,26 @@ const SimpleGameScene = ({ onBackToMenu }: SimpleGameSceneProps) => {
         z: -Math.sin(player.yaw)
       };
 
-      let newX = player.x;
-      let newZ = player.z;
-
       if (keys.w) {
-        newX += forward.x * speed;
-        newZ += forward.z * speed;
+        player.x += forward.x * speed;
+        player.z += forward.z * speed;
       }
       if (keys.s) {
-        newX -= forward.x * speed;
-        newZ -= forward.z * speed;
+        player.x -= forward.x * speed;
+        player.z -= forward.z * speed;
       }
       if (keys.a) {
-        newX -= right.x * speed;
-        newZ -= right.z * speed;
+        player.x -= right.x * speed;
+        player.z -= right.z * speed;
       }
       if (keys.d) {
-        newX += right.x * speed;
-        newZ += right.z * speed;
+        player.x += right.x * speed;
+        player.z += right.z * speed;
       }
-
-      setPlayer(prev => ({ ...prev, x: newX, z: newZ }));
 
       ctx.fillStyle = '#87CEEB';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      const fov = Math.PI / 3;
       const halfWidth = canvas.width / 2;
       const halfHeight = canvas.height / 2;
       const scale = 500;
@@ -185,7 +181,7 @@ const SimpleGameScene = ({ onBackToMenu }: SimpleGameSceneProps) => {
     return () => {
       cancelAnimationFrame(animationFrameId);
     };
-  }, [player, keys, blocks]);
+  }, [blocks]);
 
   return (
     <div className="w-full h-screen relative bg-black">
