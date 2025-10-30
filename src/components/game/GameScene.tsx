@@ -1,7 +1,7 @@
-import { Canvas } from "@react-three/fiber";
+import { Canvas, useThree } from "@react-three/fiber";
 import { Physics } from "@react-three/rapier";
-import { OrbitControls, Sky, Stats } from "@react-three/drei";
-import { useState } from "react";
+import { Sky, Stats } from "@react-three/drei";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import Icon from "@/components/ui/icon";
@@ -9,6 +9,7 @@ import Ground from "@/components/game/Ground";
 import Player from "@/components/game/Player";
 import GameObjects from "@/components/game/GameObjects";
 import { useToast } from "@/hooks/use-toast";
+import * as THREE from "three";
 
 export interface GameObject {
   id: string;
@@ -21,25 +22,81 @@ interface GameSceneProps {
   onBackToMenu: () => void;
 }
 
+const MouseControls = ({ 
+  objects, 
+  setObjects 
+}: { 
+  objects: GameObject[]; 
+  setObjects: React.Dispatch<React.SetStateAction<GameObject[]>>;
+}) => {
+  const { camera, scene } = useThree();
+  const raycaster = new THREE.Raycaster();
+  const mouse = new THREE.Vector2();
+
+  useEffect(() => {
+    const handleMouseClick = (event: MouseEvent) => {
+      mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+      mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+      raycaster.setFromCamera(mouse, camera);
+      const intersects = raycaster.intersectObjects(scene.children, true);
+
+      if (event.button === 0) {
+        if (intersects.length > 0) {
+          const hit = intersects[0];
+          const normal = hit.face?.normal;
+          if (normal) {
+            const worldNormal = normal.clone().transformDirection(hit.object.matrixWorld);
+            const placePosition = hit.point.clone().add(worldNormal.multiplyScalar(0.5));
+            
+            const colors = ['#8b5cf6', '#06b6d4', '#ec4899', '#f59e0b', '#10b981'];
+            const newObject: GameObject = {
+              id: Math.random().toString(36).substr(2, 9),
+              type: 'box',
+              position: [
+                Math.round(placePosition.x),
+                Math.round(placePosition.y),
+                Math.round(placePosition.z)
+              ],
+              color: colors[Math.floor(Math.random() * colors.length)]
+            };
+            setObjects(prev => [...prev, newObject]);
+          }
+        }
+      } else if (event.button === 2) {
+        if (intersects.length > 0) {
+          const hit = intersects[0];
+          const hitPosition = hit.point.clone().sub(hit.face?.normal.clone().multiplyScalar(0.5) || new THREE.Vector3());
+          
+          setObjects(prev => prev.filter(obj => {
+            const objPos = new THREE.Vector3(...obj.position);
+            const distance = objPos.distanceTo(hitPosition);
+            return distance > 0.7;
+          }));
+        }
+      }
+    };
+
+    const handleContextMenu = (e: MouseEvent) => {
+      e.preventDefault();
+    };
+
+    window.addEventListener('mousedown', handleMouseClick);
+    window.addEventListener('contextmenu', handleContextMenu);
+
+    return () => {
+      window.removeEventListener('mousedown', handleMouseClick);
+      window.removeEventListener('contextmenu', handleContextMenu);
+    };
+  }, [camera, scene, objects, setObjects]);
+
+  return null;
+};
+
 const GameScene = ({ onBackToMenu }: GameSceneProps) => {
   const [objects, setObjects] = useState<GameObject[]>([]);
   const [showStats, setShowStats] = useState(false);
   const { toast } = useToast();
-
-  const addObject = () => {
-    const colors = ['#8b5cf6', '#06b6d4', '#ec4899', '#f59e0b', '#10b981'];
-    const newObject: GameObject = {
-      id: Math.random().toString(36).substr(2, 9),
-      type: 'box',
-      position: [Math.random() * 10 - 5, 10, Math.random() * 10 - 5],
-      color: colors[Math.floor(Math.random() * colors.length)]
-    };
-    setObjects(prev => [...prev, newObject]);
-    toast({
-      title: "Куб создан",
-      description: "Добавлен новый куб в мир"
-    });
-  };
 
   const clearObjects = () => {
     setObjects([]);
@@ -71,13 +128,7 @@ const GameScene = ({ onBackToMenu }: GameSceneProps) => {
           <GameObjects objects={objects} />
         </Physics>
         
-        <OrbitControls
-          enablePan={true}
-          enableZoom={true}
-          enableRotate={true}
-          minDistance={5}
-          maxDistance={50}
-        />
+        <MouseControls objects={objects} setObjects={setObjects} />
         {showStats && <Stats />}
       </Canvas>
 
@@ -88,17 +139,6 @@ const GameScene = ({ onBackToMenu }: GameSceneProps) => {
         </h2>
         
         <div className="space-y-4">
-          <div className="space-y-2">
-            <Button
-              onClick={addObject}
-              className="w-full"
-              size="lg"
-            >
-              <Icon name="Box" size={20} className="mr-2" />
-              Создать куб
-            </Button>
-          </div>
-
           <div className="space-y-2">
             <Button
               onClick={clearObjects}
@@ -129,10 +169,12 @@ const GameScene = ({ onBackToMenu }: GameSceneProps) => {
           </div>
 
           <div className="text-sm text-muted-foreground space-y-1 pt-2 border-t border-border">
-            <p>Объектов: {objects.length}</p>
-            <p className="text-xs">🖱️ ЛКМ + перетаскивание - вращение</p>
-            <p className="text-xs">🖱️ ПКМ + перетаскивание - перемещение</p>
-            <p className="text-xs">🖱️ Колесико - приближение</p>
+            <p className="font-semibold text-foreground mb-2">Управление:</p>
+            <p className="text-xs">⌨️ W/A/S/D - движение</p>
+            <p className="text-xs">⌨️ Пробел - прыжок</p>
+            <p className="text-xs">🖱️ ЛКМ - поставить блок</p>
+            <p className="text-xs">🖱️ ПКМ - убрать блок</p>
+            <p className="text-xs mt-2">Блоков: {objects.length}</p>
           </div>
         </div>
       </Card>
