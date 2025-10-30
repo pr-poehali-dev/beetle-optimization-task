@@ -7,19 +7,19 @@ const Home = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-card flex flex-col items-center justify-center p-4">
       <div className="max-w-4xl w-full space-y-8">
         <div className="text-center space-y-4">
-          <h1 className="text-6xl font-bold text-primary pixel-font">
-            PIXEL SHOOTER
+          <h1 className="text-7xl font-bold bg-gradient-to-r from-primary via-purple-500 to-accent bg-clip-text text-transparent pixel-font">
+            SPACE SHOOTER
           </h1>
-          <p className="text-xl text-muted-foreground pixel-font">
-            Классическая ретро-стрелялка
+          <p className="text-2xl text-foreground/70 pixel-font">
+            Современная космическая стрелялка
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Card className="p-6 hover:border-primary transition-colors cursor-pointer bg-card" onClick={() => navigate('/game')}>
+          <Card className="p-6 hover:border-primary hover:shadow-lg hover:shadow-primary/20 transition-all cursor-pointer bg-card/50 backdrop-blur-sm" onClick={() => navigate('/game')}>
             <div className="flex items-center gap-4">
               <Icon name="Gamepad2" size={48} className="text-primary" />
               <div>
@@ -29,7 +29,7 @@ const Home = () => {
             </div>
           </Card>
 
-          <Card className="p-6 hover:border-primary transition-colors cursor-pointer bg-card" onClick={() => navigate('/rules')}>
+          <Card className="p-6 hover:border-accent hover:shadow-lg hover:shadow-accent/20 transition-all cursor-pointer bg-card/50 backdrop-blur-sm" onClick={() => navigate('/rules')}>
             <div className="flex items-center gap-4">
               <Icon name="BookOpen" size={48} className="text-accent" />
               <div>
@@ -39,7 +39,7 @@ const Home = () => {
             </div>
           </Card>
 
-          <Card className="p-6 hover:border-primary transition-colors cursor-pointer bg-card" onClick={() => navigate('/leaderboard')}>
+          <Card className="p-6 hover:border-accent hover:shadow-lg hover:shadow-accent/20 transition-all cursor-pointer bg-card/50 backdrop-blur-sm" onClick={() => navigate('/leaderboard')}>
             <div className="flex items-center gap-4">
               <Icon name="Trophy" size={48} className="text-accent" />
               <div>
@@ -49,7 +49,7 @@ const Home = () => {
             </div>
           </Card>
 
-          <Card className="p-6 hover:border-primary transition-colors cursor-pointer bg-card" onClick={() => navigate('/profile')}>
+          <Card className="p-6 hover:border-accent hover:shadow-lg hover:shadow-accent/20 transition-all cursor-pointer bg-card/50 backdrop-blur-sm" onClick={() => navigate('/profile')}>
             <div className="flex items-center gap-4">
               <Icon name="User" size={48} className="text-accent" />
               <div>

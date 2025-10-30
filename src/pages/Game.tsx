@@ -173,15 +173,15 @@ const Game = () => {
         </div>
       </div>
 
-      <div className="flex-1 relative bg-card border-2 border-border rounded overflow-hidden">
+      <div className="flex-1 relative bg-gradient-to-b from-card via-card to-background border border-border/50 rounded-2xl overflow-hidden shadow-2xl">
         {!gameOver && (
           <div
-            className="absolute w-12 h-12 bg-primary"
+            className="absolute w-16 h-16 bg-gradient-to-br from-primary via-primary to-purple-600 rounded-lg shadow-lg shadow-primary/50 transition-all duration-100"
             style={{
               left: `${playerPos.x}%`,
               top: `${playerPos.y}%`,
               transform: 'translate(-50%, -50%)',
-              clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)'
+              clipPath: 'polygon(50% 0%, 100% 100%, 0% 100%)'
             }}
           />
         )}
@@ -189,7 +189,7 @@ const Game = () => {
         {bullets.map(bullet => (
           <div
             key={bullet.id}
-            className="absolute w-2 h-4 bg-accent"
+            className="absolute w-3 h-8 bg-gradient-to-t from-accent to-blue-400 rounded-full shadow-lg shadow-accent/50 transition-all"
             style={{
               left: `${bullet.x}%`,
               top: `${bullet.y}%`,
@@ -201,18 +201,18 @@ const Game = () => {
         {enemies.map(enemy => (
           <div
             key={enemy.id}
-            className="absolute w-10 h-10 bg-destructive"
+            className="absolute w-14 h-14 bg-gradient-to-br from-destructive to-red-600 rounded-xl shadow-lg shadow-destructive/50 transition-all duration-200"
             style={{
               left: `${enemy.x}%`,
               top: `${enemy.y}%`,
-              transform: 'translate(-50%, -50%)',
+              transform: 'translate(-50%, -50%) rotate(45deg)',
               opacity: enemy.health / 2
             }}
           />
         ))}
 
         {(gameOver || isPaused) && (
-          <div className="absolute inset-0 bg-background/90 flex flex-col items-center justify-center gap-4">
+          <div className="absolute inset-0 bg-background/95 backdrop-blur-md flex flex-col items-center justify-center gap-6">
             <h2 className="text-4xl font-bold text-primary pixel-font">
               {gameOver ? 'ИГРА ОКОНЧЕНА' : 'ПАУЗА'}
             </h2>
