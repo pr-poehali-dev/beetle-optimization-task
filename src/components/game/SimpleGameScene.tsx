@@ -156,14 +156,20 @@ const SimpleGameScene = ({ onBackToMenu }: SimpleGameSceneProps) => {
       player.velocityY += gravity;
       player.y += player.velocityY * deltaTime;
 
+      const playerBlockX = Math.round(player.x);
+      const playerBlockZ = Math.round(player.z);
       const blockUnderPlayer = blocks.find(
-        b => Math.floor(player.x) === b.x && Math.floor(player.z) === b.z && b.y === 0
+        b => b.x === playerBlockX && b.z === playerBlockZ && b.y === 0
       );
 
-      if (blockUnderPlayer && player.y <= 2.0) {
-        player.y = 2.0;
-        player.velocityY = 0;
-        player.onGround = true;
+      if (blockUnderPlayer) {
+        if (player.y <= 2.0) {
+          player.y = 2.0;
+          player.velocityY = 0;
+          player.onGround = true;
+        } else {
+          player.onGround = false;
+        }
       } else {
         player.onGround = false;
       }
