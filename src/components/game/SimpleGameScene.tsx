@@ -145,18 +145,23 @@ const SimpleGameScene = ({ onBackToMenu }: SimpleGameSceneProps) => {
         const dy = block.y - player.y + 1;
         const dz = block.z - player.z;
 
-        const cos = Math.cos(player.yaw);
-        const sin = Math.sin(player.yaw);
-        const rx = dx * cos - dz * sin;
-        const rz = dx * sin + dz * cos;
+        const cosYaw = Math.cos(player.yaw);
+        const sinYaw = Math.sin(player.yaw);
+        const rx = dx * cosYaw - dz * sinYaw;
+        const rz = dx * sinYaw + dz * cosYaw;
 
-        if (rz <= 0.1) return;
+        const cosPitch = Math.cos(player.pitch);
+        const sinPitch = Math.sin(player.pitch);
+        const ry = dy * cosPitch - rz * sinPitch;
+        const rzPitch = dy * sinPitch + rz * cosPitch;
 
-        const screenX = halfWidth + (rx / rz) * scale;
-        const screenY = halfHeight - (dy / rz) * scale;
-        const size = scale / rz;
+        if (rzPitch <= 0.1) return;
 
-        const brightness = Math.max(0.3, 1 - rz / 30);
+        const screenX = halfWidth + (rx / rzPitch) * scale;
+        const screenY = halfHeight - (ry / rzPitch) * scale;
+        const size = scale / rzPitch;
+
+        const brightness = Math.max(0.3, 1 - rzPitch / 30);
         const color = block.color;
         const r = parseInt(color.slice(1, 3), 16);
         const g = parseInt(color.slice(3, 5), 16);
