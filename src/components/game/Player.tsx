@@ -137,7 +137,7 @@ const Player = () => {
   return (
     <RigidBody
       ref={playerRef}
-      position={[0, 5, 0]}
+      position={[0, 2, 0]}
       colliders="cuboid"
       restitution={0}
       friction={1}

@@ -1,7 +1,7 @@
 import { RigidBody } from "@react-three/rapier";
 
 const Ground = () => {
-  const renderSize = 50;
+  const renderSize = 100;
   const blocks = [];
 
   for (let x = -renderSize / 2; x < renderSize / 2; x++) {
@@ -9,7 +9,7 @@ const Ground = () => {
       blocks.push(
         <mesh
           key={`${x}-${z}`}
-          position={[x, -0.5, z]}
+          position={[x, 0, z]}
           receiveShadow
           castShadow
         >
@@ -25,7 +25,11 @@ const Ground = () => {
   }
 
   return (
-    <RigidBody type="fixed" colliders="cuboid">
+    <RigidBody type="fixed" colliders="cuboid" position={[0, 0, 0]}>
+      <mesh position={[0, -0.5, 0]} receiveShadow>
+        <boxGeometry args={[renderSize, 1, renderSize]} />
+        <meshStandardMaterial color="#22c55e" roughness={0.8} metalness={0.2} />
+      </mesh>
       <group>{blocks}</group>
     </RigidBody>
   );
