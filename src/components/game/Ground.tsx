@@ -1,16 +1,33 @@
 import { RigidBody } from "@react-three/rapier";
 
 const Ground = () => {
-  return (
-    <>
-      <RigidBody type="fixed" colliders="cuboid">
-        <mesh receiveShadow position={[0, -0.5, 0]}>
-          <boxGeometry args={[50, 1, 50]} />
-          <meshStandardMaterial color="#2a2a2a" />
+  const renderSize = 50;
+  const blocks = [];
+
+  for (let x = -renderSize / 2; x < renderSize / 2; x++) {
+    for (let z = -renderSize / 2; z < renderSize / 2; z++) {
+      blocks.push(
+        <mesh
+          key={`${x}-${z}`}
+          position={[x, -0.5, z]}
+          receiveShadow
+          castShadow
+        >
+          <boxGeometry args={[1, 1, 1]} />
+          <meshStandardMaterial 
+            color="#22c55e"
+            roughness={0.8}
+            metalness={0.2}
+          />
         </mesh>
-      </RigidBody>
-      <gridHelper args={[50, 50, '#444444', '#333333']} position={[0, 0.01, 0]} />
-    </>
+      );
+    }
+  }
+
+  return (
+    <RigidBody type="fixed" colliders="cuboid">
+      <group>{blocks}</group>
+    </RigidBody>
   );
 };
 
