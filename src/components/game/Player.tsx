@@ -17,10 +17,6 @@ const Player = () => {
 
   useEffect(() => {
     const canvas = gl.domElement;
-    
-    const handleClick = () => {
-      canvas.requestPointerLock();
-    };
 
     const handleMouseMove = (e: MouseEvent) => {
       if (document.pointerLockElement === canvas) {
@@ -34,10 +30,21 @@ const Player = () => {
 
     const handleKeyDown = (e: KeyboardEvent) => {
       const key = e.key.toLowerCase();
+      
+      if (key === 'control') {
+        e.preventDefault();
+        if (document.pointerLockElement !== canvas) {
+          canvas.requestPointerLock();
+        } else {
+          document.exitPointerLock();
+        }
+      }
+      
       if (key === 'w' || key === 'a' || key === 's' || key === 'd' || key === ' ') {
         e.preventDefault();
         setKeys(prev => ({ ...prev, [key === ' ' ? 'space' : key]: true }));
       }
+      
       if (key === 'escape') {
         document.exitPointerLock();
       }
@@ -51,13 +58,11 @@ const Player = () => {
       }
     };
 
-    canvas.addEventListener('click', handleClick);
     window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
 
     return () => {
-      canvas.removeEventListener('click', handleClick);
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
