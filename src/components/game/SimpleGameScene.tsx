@@ -17,7 +17,7 @@ interface Block {
 const SimpleGameScene = ({ onBackToMenu }: SimpleGameSceneProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [blocks, setBlocks] = useState<Block[]>([]);
-  const playerRef = useRef({ x: 0, y: 2.2, z: 0, yaw: 0, pitch: 0, velocityY: 0, onGround: false });
+  const playerRef = useRef({ x: 0, y: 2.5, z: 0, yaw: 0, pitch: 0, velocityY: 0, onGround: false });
   const keysRef = useRef({ w: false, a: false, s: false, d: false, space: false });
   const [isLocked, setIsLocked] = useState(false);
   const playerIdRef = useRef(`player_${Math.random().toString(36).substr(2, 9)}`);
@@ -160,8 +160,8 @@ const SimpleGameScene = ({ onBackToMenu }: SimpleGameSceneProps) => {
         b => Math.floor(player.x) === b.x && Math.floor(player.z) === b.z && b.y === 0
       );
 
-      if (blockUnderPlayer && player.y <= 1.7) {
-        player.y = 1.7;
+      if (blockUnderPlayer && player.y <= 2.0) {
+        player.y = 2.0;
         player.velocityY = 0;
         player.onGround = true;
       } else {
