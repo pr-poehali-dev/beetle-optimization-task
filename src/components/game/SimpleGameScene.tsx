@@ -195,8 +195,8 @@ const SimpleGameScene = ({ onBackToMenu }: SimpleGameSceneProps) => {
           }
           ctx.closePath();
           ctx.fill();
-          ctx.strokeStyle = `rgba(0,0,0,${brightness * 0.5})`;
-          ctx.lineWidth = 1;
+          ctx.strokeStyle = `rgba(0,0,0,${brightness * 0.8})`;
+          ctx.lineWidth = 2;
           ctx.stroke();
         };
 
