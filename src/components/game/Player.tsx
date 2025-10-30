@@ -123,33 +123,30 @@ const Player = () => {
       }, true);
     }
 
-    const cameraOffset = new THREE.Vector3(
-      -Math.sin(rotation.yaw) * 5 * Math.cos(rotation.pitch),
-      2 + Math.sin(rotation.pitch) * 5,
-      -Math.cos(rotation.yaw) * 5 * Math.cos(rotation.pitch)
-    );
-
     camera.position.set(
-      position.x + cameraOffset.x,
-      position.y + cameraOffset.y,
-      position.z + cameraOffset.z
+      position.x,
+      position.y + 1.6,
+      position.z
     );
-    camera.lookAt(position.x, position.y + 1, position.z);
+    
+    camera.rotation.order = 'YXZ';
+    camera.rotation.y = rotation.yaw;
+    camera.rotation.x = rotation.pitch;
   });
 
   return (
     <RigidBody
       ref={playerRef}
       position={[0, 5, 0]}
-      colliders="ball"
+      colliders="cuboid"
       restitution={0}
       friction={1}
       linearDamping={0.5}
       lockRotations
     >
-      <mesh castShadow>
-        <sphereGeometry args={[0.5, 32, 32]} />
-        <meshStandardMaterial color="#06b6d4" metalness={0.7} roughness={0.2} />
+      <mesh castShadow visible={false}>
+        <boxGeometry args={[0.6, 1.8, 0.6]} />
+        <meshStandardMaterial color="#06b6d4" />
       </mesh>
     </RigidBody>
   );
