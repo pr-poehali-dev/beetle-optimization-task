@@ -71,7 +71,7 @@ const SimpleGameScene = ({ onBackToMenu }: SimpleGameSceneProps) => {
     const handleMouseMove = (e: MouseEvent) => {
       if (document.pointerLockElement === canvasRef.current) {
         const sensitivity = 0.002;
-        playerRef.current.yaw -= e.movementX * sensitivity;
+        playerRef.current.yaw += e.movementX * sensitivity;
         playerRef.current.pitch = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, playerRef.current.pitch - e.movementY * sensitivity));
       }
     };
