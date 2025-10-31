@@ -45,18 +45,23 @@ const SimpleGameScene = ({ onBackToMenu }: SimpleGameSceneProps) => {
     loadPosition();
 
     const groundBlocks: Block[] = [];
-    for (let x = -25; x < 25; x += 0.5) {
-      for (let z = -25; z < 25; z += 0.5) {
+    const colors = ['#22c55e', '#16a34a', '#15803d', '#14532d', '#78716c', '#57534e', '#a8a29e'];
+    
+    for (let x = -25; x < 25; x += 0.35) {
+      for (let z = -25; z < 25; z += 0.35) {
         const height = Math.floor(
           Math.sin(x * 0.2) * 2 + 
           Math.cos(z * 0.2) * 2 + 
           Math.sin(x * 0.1 + z * 0.1) * 1.5
         );
-        for (let y = 0; y <= height; y += 0.5) {
-          const color = y === height ? '#22c55e' : '#8b4513';
-          const scaleX = 0.6 + Math.sin(x * 17 + z * 13) * 0.2;
-          const scaleY = 0.6 + Math.cos(y * 11 + x * 7) * 0.2;
-          const scaleZ = 0.6 + Math.sin(z * 19 + y * 5) * 0.2;
+        for (let y = 0; y <= height; y += 0.35) {
+          const noise = Math.sin(x * 2.3 + z * 1.7 + y * 3.1) * 0.5 + 0.5;
+          const colorIndex = Math.floor(noise * colors.length);
+          const color = y === height ? colors[Math.min(colorIndex, colors.length - 1)] : colors[colors.length - 2];
+          
+          const scaleX = 0.8 + Math.sin(x * 17 + z * 13) * 0.4;
+          const scaleY = 0.8 + Math.cos(y * 11 + x * 7) * 0.4;
+          const scaleZ = 0.8 + Math.sin(z * 19 + y * 5) * 0.4;
           groundBlocks.push({ x, y, z, color, scaleX, scaleY, scaleZ });
         }
       }
@@ -253,33 +258,42 @@ const SimpleGameScene = ({ onBackToMenu }: SimpleGameSceneProps) => {
         const scaleY = block.scaleY || 1;
         const scaleZ = block.scaleZ || 1;
         
-        const radiusX = (0.6 * scaleX / rzPitch) * scale;
-        const radiusY = (0.6 * scaleY / rzPitch) * scale;
+        const radiusX = (0.7 * scaleX / rzPitch) * scale;
+        const radiusY = (0.7 * scaleY / rzPitch) * scale;
 
-        const brightness = Math.max(0.3, 1 - rzPitch / 30);
+        const brightness = Math.max(0.4, 1 - rzPitch / 30);
         const r = parseInt(block.color.slice(1, 3), 16);
         const g = parseInt(block.color.slice(3, 5), 16);
         const b = parseInt(block.color.slice(5, 7), 16);
 
         ctx.save();
         ctx.translate(screenX, screenY);
+        
+        const rotation = Math.sin(block.x * 5 + block.z * 3) * 0.3;
+        ctx.rotate(rotation);
         ctx.scale(radiusX / radiusY, 1);
 
         const gradient = ctx.createRadialGradient(
-          -radiusY * 0.3,
-          -radiusY * 0.3,
+          -radiusY * 0.4,
+          -radiusY * 0.4,
           0,
           0,
           0,
-          radiusY
+          radiusY * 1.2
         );
-        gradient.addColorStop(0, `rgb(${r * brightness * 1.3}, ${g * brightness * 1.3}, ${b * brightness * 1.3})`);
-        gradient.addColorStop(0.7, `rgb(${r * brightness}, ${g * brightness}, ${b * brightness})`);
-        gradient.addColorStop(1, `rgb(${r * brightness * 0.5}, ${g * brightness * 0.5}, ${b * brightness * 0.5})`);
+        gradient.addColorStop(0, `rgb(${r * brightness * 1.4}, ${g * brightness * 1.4}, ${b * brightness * 1.4})`);
+        gradient.addColorStop(0.5, `rgb(${r * brightness * 1.1}, ${g * brightness * 1.1}, ${b * brightness * 1.1})`);
+        gradient.addColorStop(0.8, `rgb(${r * brightness * 0.8}, ${g * brightness * 0.8}, ${b * brightness * 0.8})`);
+        gradient.addColorStop(1, `rgb(${r * brightness * 0.4}, ${g * brightness * 0.4}, ${b * brightness * 0.4})`);
 
         ctx.fillStyle = gradient;
         ctx.beginPath();
         ctx.arc(0, 0, radiusY, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = `rgba(${r * brightness * 0.3}, ${g * brightness * 0.3}, ${b * brightness * 0.3}, 0.2)`;
+        ctx.beginPath();
+        ctx.ellipse(0, radiusY * 0.3, radiusY * 0.6, radiusY * 0.2, 0, 0, Math.PI * 2);
         ctx.fill();
 
         ctx.restore();
