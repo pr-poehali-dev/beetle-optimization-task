@@ -45,29 +45,23 @@ const SimpleGameScene = ({ onBackToMenu }: SimpleGameSceneProps) => {
     loadPosition();
 
     const groundBlocks: Block[] = [];
-    const colors = ['#22c55e', '#16a34a', '#15803d', '#14532d', '#78716c', '#57534e', '#a8a29e', '#84cc16', '#65a30d'];
+    const colors = ['#22c55e', '#16a34a', '#15803d', '#78716c', '#57534e'];
     
-    for (let x = -25; x < 25; x += 0.3) {
-      for (let z = -25; z < 25; z += 0.3) {
-        const baseHeight = 
+    for (let x = -20; x < 20; x += 0.6) {
+      for (let z = -20; z < 20; z += 0.6) {
+        const height = Math.floor(
           Math.sin(x * 0.2) * 2 + 
-          Math.cos(z * 0.2) * 2 + 
-          Math.sin(x * 0.1 + z * 0.1) * 1.5;
+          Math.cos(z * 0.2) * 1.5
+        );
         
-        const bump = Math.sin(x * 1.3) * Math.cos(z * 1.7) * 0.8;
-        const detail = Math.sin(x * 3.7 + z * 2.3) * 0.3;
-        const height = Math.floor(baseHeight + bump + detail);
-        
-        for (let y = 0; y <= height; y += 0.3) {
-          const noise = Math.sin(x * 2.3 + z * 1.7 + y * 3.1) * 0.5 + 0.5;
-          const noise2 = Math.cos(x * 4.1 - z * 3.3) * 0.5 + 0.5;
-          const colorNoise = (noise + noise2) / 2;
-          const colorIndex = Math.floor(colorNoise * colors.length);
-          const color = y === height ? colors[Math.min(colorIndex, colors.length - 1)] : colors[Math.floor(colors.length * 0.7)];
+        for (let y = 0; y <= height; y += 0.6) {
+          const noise = Math.sin(x * 2 + z * 2) * 0.5 + 0.5;
+          const colorIndex = Math.floor(noise * colors.length);
+          const color = y === height ? colors[Math.min(colorIndex, colors.length - 1)] : colors[colors.length - 2];
           
-          const scaleX = 0.85 + Math.sin(x * 17 + z * 13 + y * 7) * 0.45;
-          const scaleY = 0.85 + Math.cos(y * 11 + x * 7 - z * 5) * 0.45;
-          const scaleZ = 0.85 + Math.sin(z * 19 + y * 5 + x * 9) * 0.45;
+          const scaleX = 0.9 + Math.sin(x * 10 + z * 8) * 0.3;
+          const scaleY = 0.9;
+          const scaleZ = 0.9 + Math.sin(z * 12) * 0.3;
           groundBlocks.push({ x, y, z, color, scaleX, scaleY, scaleZ });
         }
       }
@@ -294,35 +288,13 @@ const SimpleGameScene = ({ onBackToMenu }: SimpleGameSceneProps) => {
 
         ctx.fillStyle = gradient;
         ctx.beginPath();
-        const points = 16;
-        for (let i = 0; i < points; i++) {
-          const angle = (i / points) * Math.PI * 2;
-          const wobble = Math.sin(angle * 3 + block.x + block.z) * 0.1;
-          const dist = radiusY * (1 + wobble);
-          const px = Math.cos(angle) * dist;
-          const py = Math.sin(angle) * dist;
-          if (i === 0) ctx.moveTo(px, py);
-          else ctx.lineTo(px, py);
-        }
-        ctx.closePath();
+        ctx.arc(0, 0, radiusY, 0, Math.PI * 2);
         ctx.fill();
 
         ctx.fillStyle = `rgba(${r * brightness * 0.3}, ${g * brightness * 0.3}, ${b * brightness * 0.3}, 0.2)`;
         ctx.beginPath();
         ctx.ellipse(0, radiusY * 0.3, radiusY * 0.6, radiusY * 0.2, 0, 0, Math.PI * 2);
         ctx.fill();
-
-        const textureCount = 3 + Math.floor(Math.random() * 3);
-        for (let i = 0; i < textureCount; i++) {
-          const tx = (Math.sin(block.x * 13 + i) - 0.5) * radiusY * 0.5;
-          const ty = (Math.cos(block.z * 17 + i) - 0.5) * radiusY * 0.5;
-          const tsize = radiusY * 0.08;
-          
-          ctx.fillStyle = `rgba(${r * brightness * 1.6}, ${g * brightness * 1.6}, ${b * brightness * 1.6}, 0.15)`;
-          ctx.beginPath();
-          ctx.arc(tx, ty, tsize, 0, Math.PI * 2);
-          ctx.fill();
-        }
 
         ctx.restore();
       });
