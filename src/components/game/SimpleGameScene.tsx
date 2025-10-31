@@ -87,7 +87,6 @@ const SimpleGameScene = ({ onBackToMenu }: SimpleGameSceneProps) => {
         e.preventDefault();
         const k = key === ' ' ? 'space' : key;
         keysRef.current[k as keyof typeof keysRef.current] = true;
-        console.log('Key pressed:', k, keysRef.current);
       }
       if (key === 'escape') {
         document.exitPointerLock();
@@ -100,7 +99,6 @@ const SimpleGameScene = ({ onBackToMenu }: SimpleGameSceneProps) => {
         e.preventDefault();
         const k = key === ' ' ? 'space' : key;
         keysRef.current[k as keyof typeof keysRef.current] = false;
-        console.log('Key released:', k, keysRef.current);
       }
     };
 
@@ -219,22 +217,18 @@ const SimpleGameScene = ({ onBackToMenu }: SimpleGameSceneProps) => {
       if (keys.w) {
         player.x += forward.x * speed;
         player.z += forward.z * speed;
-        console.log('Moving W', player.x, player.z);
       }
       if (keys.s) {
         player.x -= forward.x * speed;
         player.z -= forward.z * speed;
-        console.log('Moving S', player.x, player.z);
       }
       if (keys.a) {
         player.x += right.x * speed;
         player.z += right.z * speed;
-        console.log('Moving A', player.x, player.z);
       }
       if (keys.d) {
         player.x -= right.x * speed;
         player.z -= right.z * speed;
-        console.log('Moving D', player.x, player.z);
       }
 
       const gravity = -20 * deltaTime;
@@ -396,6 +390,14 @@ const SimpleGameScene = ({ onBackToMenu }: SimpleGameSceneProps) => {
       ctx.fillRect(halfWidth - 2, halfHeight - 2, 4, 4);
       ctx.strokeStyle = 'rgba(0,0,0,0.5)';
       ctx.strokeRect(halfWidth - 10, halfHeight - 10, 20, 20);
+
+      ctx.fillStyle = 'rgba(0,0,0,0.7)';
+      ctx.fillRect(10, 10, 300, 100);
+      ctx.fillStyle = 'white';
+      ctx.font = '16px monospace';
+      ctx.fillText(`X: ${player.x.toFixed(2)} Y: ${player.y.toFixed(2)} Z: ${player.z.toFixed(2)}`, 20, 35);
+      ctx.fillText(`Keys: W=${keys.w} A=${keys.a} S=${keys.s} D=${keys.d}`, 20, 60);
+      ctx.fillText(`Speed: ${speed.toFixed(3)} DeltaTime: ${deltaTime.toFixed(3)}`, 20, 85);
 
       animationFrameId = requestAnimationFrame(gameLoop);
     };
