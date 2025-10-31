@@ -188,6 +188,7 @@ const SimpleGameScene = ({ onBackToMenu }: SimpleGameSceneProps) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
+    canvas.focus();
     canvas.requestPointerLock();
 
     const ctx = canvas.getContext('2d');
@@ -412,10 +413,11 @@ const SimpleGameScene = ({ onBackToMenu }: SimpleGameSceneProps) => {
         ref={canvasRef}
         width={1920}
         height={1080}
-        className="w-full h-full cursor-crosshair"
+        className="w-full h-full cursor-crosshair outline-none"
         style={{ imageRendering: 'pixelated' }}
         onClick={() => canvasRef.current?.requestPointerLock()}
         onContextMenu={(e) => e.preventDefault()}
+        tabIndex={0}
       />
 
       <Card className="absolute top-4 left-4 p-4 bg-card/90 backdrop-blur-md border border-border/50">
