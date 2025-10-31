@@ -114,18 +114,73 @@ const SimpleGameScene = ({ onBackToMenu }: SimpleGameSceneProps) => {
       }
     };
 
+    const handleMouseClick = (e: MouseEvent) => {
+      if (document.pointerLockElement !== canvasRef.current) return;
+      
+      const player = playerRef.current;
+      const reach = 5;
+      const dir = {
+        x: -Math.sin(player.yaw) * Math.cos(player.pitch),
+        y: Math.sin(player.pitch),
+        z: -Math.cos(player.yaw) * Math.cos(player.pitch)
+      };
+
+      for (let dist = 0.1; dist < reach; dist += 0.1) {
+        const checkX = player.x + dir.x * dist;
+        const checkY = player.y + dir.y * dist;
+        const checkZ = player.z + dir.z * dist;
+
+        const hitBlock = blocks.find(b => 
+          Math.abs(b.x - checkX) < 0.3 && 
+          Math.abs(b.y - checkY) < 0.3 && 
+          Math.abs(b.z - checkZ) < 0.3
+        );
+
+        if (hitBlock) {
+          if (e.button === 0) {
+            setBlocks(prev => prev.filter(b => b !== hitBlock));
+          } else if (e.button === 2) {
+            const placeX = Math.round(hitBlock.x);
+            const placeY = Math.round(hitBlock.y + 0.6);
+            const placeZ = Math.round(hitBlock.z);
+            
+            const exists = blocks.some(b => 
+              Math.abs(b.x - placeX) < 0.3 && 
+              Math.abs(b.y - placeY) < 0.3 && 
+              Math.abs(b.z - placeZ) < 0.3
+            );
+            
+            if (!exists) {
+              setBlocks(prev => [...prev, {
+                x: placeX,
+                y: placeY,
+                z: placeZ,
+                color: '#15803d',
+                scaleX: 0.9,
+                scaleY: 0.9,
+                scaleZ: 0.9
+              }]);
+            }
+          }
+          break;
+        }
+      }
+    };
+
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
     window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mousedown', handleMouseClick);
     document.addEventListener('pointerlockchange', handlePointerLockChange);
 
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
       window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mousedown', handleMouseClick);
       document.removeEventListener('pointerlockchange', handlePointerLockChange);
     };
-  }, [isLocked]);
+  }, [isLocked, blocks]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -354,6 +409,7 @@ const SimpleGameScene = ({ onBackToMenu }: SimpleGameSceneProps) => {
         className="w-full h-full cursor-crosshair"
         style={{ imageRendering: 'pixelated' }}
         onClick={() => canvasRef.current?.requestPointerLock()}
+        onContextMenu={(e) => e.preventDefault()}
       />
 
       <Card className="absolute top-4 left-4 p-4 bg-card/90 backdrop-blur-md border border-border/50">
@@ -376,6 +432,8 @@ const SimpleGameScene = ({ onBackToMenu }: SimpleGameSceneProps) => {
             <p className="font-semibold text-foreground mb-2">Управление:</p>
             <p className="text-xs">⌨️ W/A/S/D - движение</p>
             <p className="text-xs">🖱️ Мышь - обзор (автозахват)</p>
+            <p className="text-xs">🖱️ ЛКМ - ломать блок</p>
+            <p className="text-xs">🖱️ ПКМ - ставить блок</p>
             <p className="text-xs">⌨️ Пробел - прыжок</p>
             <p className="text-xs">⌨️ ESC - выход из блокировки</p>
           </div>
