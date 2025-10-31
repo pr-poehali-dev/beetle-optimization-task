@@ -44,7 +44,15 @@ const SimpleGameScene = ({ onBackToMenu }: SimpleGameSceneProps) => {
     const groundBlocks: Block[] = [];
     for (let x = -25; x < 25; x++) {
       for (let z = -25; z < 25; z++) {
-        groundBlocks.push({ x, y: 0, z, color: '#22c55e' });
+        const height = Math.floor(
+          Math.sin(x * 0.2) * 2 + 
+          Math.cos(z * 0.2) * 2 + 
+          Math.sin(x * 0.1 + z * 0.1) * 1.5
+        );
+        for (let y = 0; y <= height; y++) {
+          const color = y === height ? '#22c55e' : '#8b4513';
+          groundBlocks.push({ x, y, z, color });
+        }
       }
     }
     setBlocks(groundBlocks);
@@ -158,13 +166,18 @@ const SimpleGameScene = ({ onBackToMenu }: SimpleGameSceneProps) => {
 
       const playerBlockX = Math.round(player.x);
       const playerBlockZ = Math.round(player.z);
-      const blockUnderPlayer = blocks.find(
-        b => b.x === playerBlockX && b.z === playerBlockZ && b.y === 0
+      
+      const blocksAtPosition = blocks.filter(
+        b => b.x === playerBlockX && b.z === playerBlockZ
       );
+      const highestBlock = blocksAtPosition.reduce((max, b) => 
+        b.y > max ? b.y : max, -1
+      );
+      const groundLevel = highestBlock + 1;
 
-      if (blockUnderPlayer) {
-        if (player.y <= 2.0) {
-          player.y = 2.0;
+      if (highestBlock >= 0) {
+        if (player.y <= groundLevel + 1.0) {
+          player.y = groundLevel + 1.0;
           player.velocityY = 0;
           player.onGround = true;
         } else {
