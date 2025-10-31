@@ -258,45 +258,47 @@ const SimpleGameScene = ({ onBackToMenu }: SimpleGameSceneProps) => {
         const scaleY = block.scaleY || 1;
         const scaleZ = block.scaleZ || 1;
         
-        const radiusX = (0.7 * scaleX / rzPitch) * scale;
-        const radiusY = (0.7 * scaleY / rzPitch) * scale;
+        const size = (0.6 / rzPitch) * scale;
+        const sizeX = size * scaleX;
+        const sizeY = size * scaleY;
 
-        const brightness = Math.max(0.4, 1 - rzPitch / 30);
+        const brightness = Math.max(0.5, 1 - rzPitch / 30);
         const r = parseInt(block.color.slice(1, 3), 16);
         const g = parseInt(block.color.slice(3, 5), 16);
         const b = parseInt(block.color.slice(5, 7), 16);
 
-        ctx.save();
-        ctx.translate(screenX, screenY);
+        const topColor = `rgb(${r * brightness * 1.2}, ${g * brightness * 1.2}, ${b * brightness * 1.2})`;
+        const rightColor = `rgb(${r * brightness * 0.8}, ${g * brightness * 0.8}, ${b * brightness * 0.8})`;
+        const leftColor = `rgb(${r * brightness * 0.6}, ${g * brightness * 0.6}, ${b * brightness * 0.6})`;
+
+        const cubeOffset = sizeY * 0.4;
         
-        const rotation = Math.sin(block.x * 5 + block.z * 3) * 0.3;
-        ctx.rotate(rotation);
-        ctx.scale(radiusX / radiusY, 1);
-
-        const gradient = ctx.createRadialGradient(
-          -radiusY * 0.4,
-          -radiusY * 0.4,
-          0,
-          0,
-          0,
-          radiusY * 1.2
-        );
-        gradient.addColorStop(0, `rgb(${r * brightness * 1.4}, ${g * brightness * 1.4}, ${b * brightness * 1.4})`);
-        gradient.addColorStop(0.5, `rgb(${r * brightness * 1.1}, ${g * brightness * 1.1}, ${b * brightness * 1.1})`);
-        gradient.addColorStop(0.8, `rgb(${r * brightness * 0.8}, ${g * brightness * 0.8}, ${b * brightness * 0.8})`);
-        gradient.addColorStop(1, `rgb(${r * brightness * 0.4}, ${g * brightness * 0.4}, ${b * brightness * 0.4})`);
-
-        ctx.fillStyle = gradient;
+        ctx.fillStyle = topColor;
         ctx.beginPath();
-        ctx.arc(0, 0, radiusY, 0, Math.PI * 2);
+        ctx.moveTo(screenX, screenY - sizeY - cubeOffset);
+        ctx.lineTo(screenX + sizeX, screenY - sizeY * 0.5 - cubeOffset);
+        ctx.lineTo(screenX, screenY - cubeOffset);
+        ctx.lineTo(screenX - sizeX, screenY - sizeY * 0.5 - cubeOffset);
+        ctx.closePath();
         ctx.fill();
-
-        ctx.fillStyle = `rgba(${r * brightness * 0.3}, ${g * brightness * 0.3}, ${b * brightness * 0.3}, 0.2)`;
+        
+        ctx.fillStyle = rightColor;
         ctx.beginPath();
-        ctx.ellipse(0, radiusY * 0.3, radiusY * 0.6, radiusY * 0.2, 0, 0, Math.PI * 2);
+        ctx.moveTo(screenX, screenY - cubeOffset);
+        ctx.lineTo(screenX + sizeX, screenY - sizeY * 0.5 - cubeOffset);
+        ctx.lineTo(screenX + sizeX, screenY + sizeY * 0.5 - cubeOffset);
+        ctx.lineTo(screenX, screenY + sizeY - cubeOffset);
+        ctx.closePath();
         ctx.fill();
-
-        ctx.restore();
+        
+        ctx.fillStyle = leftColor;
+        ctx.beginPath();
+        ctx.moveTo(screenX, screenY - cubeOffset);
+        ctx.lineTo(screenX - sizeX, screenY - sizeY * 0.5 - cubeOffset);
+        ctx.lineTo(screenX - sizeX, screenY + sizeY * 0.5 - cubeOffset);
+        ctx.lineTo(screenX, screenY + sizeY - cubeOffset);
+        ctx.closePath();
+        ctx.fill();
       });
 
       ctx.fillStyle = 'rgba(255,255,255,0.8)';
