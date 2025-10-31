@@ -131,8 +131,12 @@ const SimpleGameScene = ({ onBackToMenu }: SimpleGameSceneProps) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
+    canvas.requestPointerLock();
+
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
+
+    ctx.imageSmoothingEnabled = false;
 
     let animationFrameId: number;
     let lastTime = performance.now();
@@ -163,12 +167,12 @@ const SimpleGameScene = ({ onBackToMenu }: SimpleGameSceneProps) => {
         player.z -= forward.z * speed;
       }
       if (keys.a) {
-        player.x -= right.x * speed;
-        player.z -= right.z * speed;
-      }
-      if (keys.d) {
         player.x += right.x * speed;
         player.z += right.z * speed;
+      }
+      if (keys.d) {
+        player.x -= right.x * speed;
+        player.z -= right.z * speed;
       }
 
       const gravity = -20 * deltaTime;
@@ -282,6 +286,14 @@ const SimpleGameScene = ({ onBackToMenu }: SimpleGameSceneProps) => {
         ctx.closePath();
         ctx.fill();
         
+        const pixelSize = Math.max(2, sizeX / 8);
+        for (let i = 0; i < 5; i++) {
+          const px = screenX + (Math.sin(block.x * 7 + i) - 0.5) * sizeX * 0.6;
+          const py = screenY - sizeY * 0.5 - cubeOffset + (Math.cos(block.z * 5 + i) - 0.5) * sizeY * 0.3;
+          ctx.fillStyle = `rgba(${r * brightness * 1.4}, ${g * brightness * 1.4}, ${b * brightness * 1.4}, 0.4)`;
+          ctx.fillRect(px, py, pixelSize, pixelSize);
+        }
+        
         ctx.fillStyle = rightColor;
         ctx.beginPath();
         ctx.moveTo(screenX, screenY - cubeOffset);
@@ -291,6 +303,13 @@ const SimpleGameScene = ({ onBackToMenu }: SimpleGameSceneProps) => {
         ctx.closePath();
         ctx.fill();
         
+        for (let i = 0; i < 3; i++) {
+          const px = screenX + sizeX * 0.5 + (Math.sin(block.x * 9 + i) - 0.5) * sizeX * 0.3;
+          const py = screenY - cubeOffset + (Math.cos(block.z * 7 + i) - 0.5) * sizeY * 0.6;
+          ctx.fillStyle = `rgba(${r * brightness * 1.0}, ${g * brightness * 1.0}, ${b * brightness * 1.0}, 0.3)`;
+          ctx.fillRect(px, py, pixelSize, pixelSize);
+        }
+        
         ctx.fillStyle = leftColor;
         ctx.beginPath();
         ctx.moveTo(screenX, screenY - cubeOffset);
@@ -299,6 +318,16 @@ const SimpleGameScene = ({ onBackToMenu }: SimpleGameSceneProps) => {
         ctx.lineTo(screenX, screenY + sizeY - cubeOffset);
         ctx.closePath();
         ctx.fill();
+        
+        ctx.strokeStyle = `rgba(0, 0, 0, 0.15)`;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(screenX, screenY - sizeY - cubeOffset);
+        ctx.lineTo(screenX + sizeX, screenY - sizeY * 0.5 - cubeOffset);
+        ctx.lineTo(screenX, screenY - cubeOffset);
+        ctx.lineTo(screenX - sizeX, screenY - sizeY * 0.5 - cubeOffset);
+        ctx.closePath();
+        ctx.stroke();
       });
 
       ctx.fillStyle = 'rgba(255,255,255,0.8)';
@@ -323,6 +352,8 @@ const SimpleGameScene = ({ onBackToMenu }: SimpleGameSceneProps) => {
         width={1920}
         height={1080}
         className="w-full h-full cursor-crosshair"
+        style={{ imageRendering: 'pixelated' }}
+        onClick={() => canvasRef.current?.requestPointerLock()}
       />
 
       <Card className="absolute top-4 left-4 p-4 bg-card/90 backdrop-blur-md border border-border/50">
@@ -343,9 +374,9 @@ const SimpleGameScene = ({ onBackToMenu }: SimpleGameSceneProps) => {
 
           <div className="text-sm text-muted-foreground space-y-1 pt-2 border-t border-border">
             <p className="font-semibold text-foreground mb-2">Управление:</p>
-            <p className="text-xs">⌨️ Ctrl - {isLocked ? 'разблокировать' : 'блокировать'} мышь</p>
             <p className="text-xs">⌨️ W/A/S/D - движение</p>
-            <p className="text-xs">🖱️ Мышь - обзор</p>
+            <p className="text-xs">🖱️ Мышь - обзор (автозахват)</p>
+            <p className="text-xs">⌨️ Пробел - прыжок</p>
             <p className="text-xs">⌨️ ESC - выход из блокировки</p>
           </div>
         </div>
