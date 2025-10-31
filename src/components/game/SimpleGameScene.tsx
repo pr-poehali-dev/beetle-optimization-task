@@ -150,12 +150,12 @@ const SimpleGameScene = ({ onBackToMenu }: SimpleGameSceneProps) => {
       const keys = keysRef.current;
       
       const forward = {
-        x: Math.sin(player.yaw),
-        z: Math.cos(player.yaw)
+        x: -Math.sin(player.yaw),
+        z: -Math.cos(player.yaw)
       };
       const right = {
-        x: Math.cos(player.yaw),
-        z: -Math.sin(player.yaw)
+        x: -Math.cos(player.yaw),
+        z: Math.sin(player.yaw)
       };
 
       if (keys.w) {
