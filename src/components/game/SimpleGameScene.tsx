@@ -12,6 +12,9 @@ interface Block {
   y: number;
   z: number;
   color: string;
+  scaleX?: number;
+  scaleY?: number;
+  scaleZ?: number;
 }
 
 const SimpleGameScene = ({ onBackToMenu }: SimpleGameSceneProps) => {
@@ -42,16 +45,19 @@ const SimpleGameScene = ({ onBackToMenu }: SimpleGameSceneProps) => {
     loadPosition();
 
     const groundBlocks: Block[] = [];
-    for (let x = -25; x < 25; x++) {
-      for (let z = -25; z < 25; z++) {
+    for (let x = -25; x < 25; x += 0.5) {
+      for (let z = -25; z < 25; z += 0.5) {
         const height = Math.floor(
           Math.sin(x * 0.2) * 2 + 
           Math.cos(z * 0.2) * 2 + 
           Math.sin(x * 0.1 + z * 0.1) * 1.5
         );
-        for (let y = 0; y <= height; y++) {
+        for (let y = 0; y <= height; y += 0.5) {
           const color = y === height ? '#22c55e' : '#8b4513';
-          groundBlocks.push({ x, y, z, color });
+          const scaleX = 0.6 + Math.sin(x * 17 + z * 13) * 0.2;
+          const scaleY = 0.6 + Math.cos(y * 11 + x * 7) * 0.2;
+          const scaleZ = 0.6 + Math.sin(z * 19 + y * 5) * 0.2;
+          groundBlocks.push({ x, y, z, color, scaleX, scaleY, scaleZ });
         }
       }
     }
@@ -164,13 +170,10 @@ const SimpleGameScene = ({ onBackToMenu }: SimpleGameSceneProps) => {
       player.velocityY += gravity;
       player.y += player.velocityY * deltaTime;
 
-      const playerBlockX = Math.round(player.x);
-      const playerBlockZ = Math.round(player.z);
-      
-      const blocksAtPosition = blocks.filter(
-        b => b.x === playerBlockX && b.z === playerBlockZ
+      const blocksNearby = blocks.filter(
+        b => Math.abs(b.x - player.x) < 1 && Math.abs(b.z - player.z) < 1
       );
-      const highestBlock = blocksAtPosition.reduce((max, b) => 
+      const highestBlock = blocksNearby.reduce((max, b) => 
         b.y > max ? b.y : max, -1
       );
       const groundLevel = highestBlock + 1;
@@ -245,32 +248,41 @@ const SimpleGameScene = ({ onBackToMenu }: SimpleGameSceneProps) => {
 
         const screenX = halfWidth + (rx / rzPitch) * scale;
         const screenY = halfHeight - (ry / rzPitch) * scale;
-        const radius = (0.5 / rzPitch) * scale;
+        
+        const scaleX = block.scaleX || 1;
+        const scaleY = block.scaleY || 1;
+        const scaleZ = block.scaleZ || 1;
+        
+        const radiusX = (0.6 * scaleX / rzPitch) * scale;
+        const radiusY = (0.6 * scaleY / rzPitch) * scale;
 
         const brightness = Math.max(0.3, 1 - rzPitch / 30);
         const r = parseInt(block.color.slice(1, 3), 16);
         const g = parseInt(block.color.slice(3, 5), 16);
         const b = parseInt(block.color.slice(5, 7), 16);
 
+        ctx.save();
+        ctx.translate(screenX, screenY);
+        ctx.scale(radiusX / radiusY, 1);
+
         const gradient = ctx.createRadialGradient(
-          screenX - radius * 0.3,
-          screenY - radius * 0.3,
+          -radiusY * 0.3,
+          -radiusY * 0.3,
           0,
-          screenX,
-          screenY,
-          radius
+          0,
+          0,
+          radiusY
         );
-        gradient.addColorStop(0, `rgb(${r * brightness * 1.2}, ${g * brightness * 1.2}, ${b * brightness * 1.2})`);
-        gradient.addColorStop(1, `rgb(${r * brightness * 0.6}, ${g * brightness * 0.6}, ${b * brightness * 0.6})`);
+        gradient.addColorStop(0, `rgb(${r * brightness * 1.3}, ${g * brightness * 1.3}, ${b * brightness * 1.3})`);
+        gradient.addColorStop(0.7, `rgb(${r * brightness}, ${g * brightness}, ${b * brightness})`);
+        gradient.addColorStop(1, `rgb(${r * brightness * 0.5}, ${g * brightness * 0.5}, ${b * brightness * 0.5})`);
 
         ctx.fillStyle = gradient;
         ctx.beginPath();
-        ctx.arc(screenX, screenY, radius, 0, Math.PI * 2);
+        ctx.arc(0, 0, radiusY, 0, Math.PI * 2);
         ctx.fill();
 
-        ctx.strokeStyle = `rgba(0,0,0,${brightness * 0.3})`;
-        ctx.lineWidth = 1;
-        ctx.stroke();
+        ctx.restore();
       });
 
       ctx.fillStyle = 'rgba(255,255,255,0.8)';
