@@ -87,6 +87,7 @@ const SimpleGameScene = ({ onBackToMenu }: SimpleGameSceneProps) => {
         e.preventDefault();
         const k = key === ' ' ? 'space' : key;
         keysRef.current[k as keyof typeof keysRef.current] = true;
+        console.log('Key pressed:', k, keysRef.current);
       }
       if (key === 'escape') {
         document.exitPointerLock();
@@ -99,6 +100,7 @@ const SimpleGameScene = ({ onBackToMenu }: SimpleGameSceneProps) => {
         e.preventDefault();
         const k = key === ' ' ? 'space' : key;
         keysRef.current[k as keyof typeof keysRef.current] = false;
+        console.log('Key released:', k, keysRef.current);
       }
     };
 
@@ -216,18 +218,22 @@ const SimpleGameScene = ({ onBackToMenu }: SimpleGameSceneProps) => {
       if (keys.w) {
         player.x += forward.x * speed;
         player.z += forward.z * speed;
+        console.log('Moving W', player.x, player.z);
       }
       if (keys.s) {
         player.x -= forward.x * speed;
         player.z -= forward.z * speed;
+        console.log('Moving S', player.x, player.z);
       }
       if (keys.a) {
         player.x += right.x * speed;
         player.z += right.z * speed;
+        console.log('Moving A', player.x, player.z);
       }
       if (keys.d) {
         player.x -= right.x * speed;
         player.z -= right.z * speed;
+        console.log('Moving D', player.x, player.z);
       }
 
       const gravity = -20 * deltaTime;
