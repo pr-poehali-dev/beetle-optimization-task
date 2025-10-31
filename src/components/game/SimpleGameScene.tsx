@@ -227,62 +227,50 @@ const SimpleGameScene = ({ onBackToMenu }: SimpleGameSceneProps) => {
         .sort((a, b) => b.distance - a.distance);
 
       sortedBlocks.forEach(({ block }) => {
-        const drawCubeFace = (
-          corners: Array<[number, number, number]>,
-          faceColor: string
-        ) => {
-          const screenCorners = corners.map(([x, y, z]) => {
-            const dx = block.x + x - player.x;
-            const dy = block.y + y - player.y + 1.0;
-            const dz = block.z + z - player.z;
+        const dx = block.x - player.x;
+        const dy = block.y - player.y + 1.0;
+        const dz = block.z - player.z;
 
-            const cosYaw = Math.cos(player.yaw);
-            const sinYaw = Math.sin(player.yaw);
-            const rx = dx * cosYaw - dz * sinYaw;
-            const rz = dx * sinYaw + dz * cosYaw;
+        const cosYaw = Math.cos(player.yaw);
+        const sinYaw = Math.sin(player.yaw);
+        const rx = dx * cosYaw - dz * sinYaw;
+        const rz = dx * sinYaw + dz * cosYaw;
 
-            const cosPitch = Math.cos(player.pitch);
-            const sinPitch = Math.sin(player.pitch);
-            const ry = dy * cosPitch - rz * sinPitch;
-            const rzPitch = dy * sinPitch + rz * cosPitch;
+        const cosPitch = Math.cos(player.pitch);
+        const sinPitch = Math.sin(player.pitch);
+        const ry = dy * cosPitch - rz * sinPitch;
+        const rzPitch = dy * sinPitch + rz * cosPitch;
 
-            if (rzPitch <= 0.1) return null;
+        if (rzPitch <= 0.1) return;
 
-            return {
-              x: halfWidth + (rx / rzPitch) * scale,
-              y: halfHeight - (ry / rzPitch) * scale,
-              z: rzPitch
-            };
-          });
+        const screenX = halfWidth + (rx / rzPitch) * scale;
+        const screenY = halfHeight - (ry / rzPitch) * scale;
+        const radius = (0.5 / rzPitch) * scale;
 
-          if (screenCorners.some(c => c === null)) return;
+        const brightness = Math.max(0.3, 1 - rzPitch / 30);
+        const r = parseInt(block.color.slice(1, 3), 16);
+        const g = parseInt(block.color.slice(3, 5), 16);
+        const b = parseInt(block.color.slice(5, 7), 16);
 
-          const avgZ = screenCorners.reduce((sum, c) => sum + (c?.z || 0), 0) / screenCorners.length;
-          const brightness = Math.max(0.3, 1 - avgZ / 30);
-          const r = parseInt(faceColor.slice(1, 3), 16);
-          const g = parseInt(faceColor.slice(3, 5), 16);
-          const b = parseInt(faceColor.slice(5, 7), 16);
+        const gradient = ctx.createRadialGradient(
+          screenX - radius * 0.3,
+          screenY - radius * 0.3,
+          0,
+          screenX,
+          screenY,
+          radius
+        );
+        gradient.addColorStop(0, `rgb(${r * brightness * 1.2}, ${g * brightness * 1.2}, ${b * brightness * 1.2})`);
+        gradient.addColorStop(1, `rgb(${r * brightness * 0.6}, ${g * brightness * 0.6}, ${b * brightness * 0.6})`);
 
-          ctx.fillStyle = `rgb(${r * brightness}, ${g * brightness}, ${b * brightness})`;
-          ctx.beginPath();
-          ctx.moveTo(screenCorners[0]!.x, screenCorners[0]!.y);
-          for (let i = 1; i < screenCorners.length; i++) {
-            ctx.lineTo(screenCorners[i]!.x, screenCorners[i]!.y);
-          }
-          ctx.closePath();
-          ctx.fill();
-          ctx.strokeStyle = `rgba(0,0,0,${brightness * 0.8})`;
-          ctx.lineWidth = 2;
-          ctx.stroke();
-        };
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(screenX, screenY, radius, 0, Math.PI * 2);
+        ctx.fill();
 
-        const s = 0.5;
-        drawCubeFace([[-s,-s,s], [s,-s,s], [s,s,s], [-s,s,s]], block.color);
-        drawCubeFace([[-s,-s,-s], [-s,s,-s], [s,s,-s], [s,-s,-s]], '#1a9d4a');
-        drawCubeFace([[-s,s,-s], [-s,s,s], [s,s,s], [s,s,-s]], '#2dd56b');
-        drawCubeFace([[-s,-s,-s], [s,-s,-s], [s,-s,s], [-s,-s,s]], '#188a3e');
-        drawCubeFace([[-s,-s,-s], [-s,-s,s], [-s,s,s], [-s,s,-s]], '#1ea850');
-        drawCubeFace([[s,-s,-s], [s,s,-s], [s,s,s], [s,-s,s]], '#1ea850');
+        ctx.strokeStyle = `rgba(0,0,0,${brightness * 0.3})`;
+        ctx.lineWidth = 1;
+        ctx.stroke();
       });
 
       ctx.fillStyle = 'rgba(255,255,255,0.8)';
